@@ -1,5 +1,4 @@
 import time
-import discord
 
 import pyautogui
 pyautogui.PAUSE = 1.5
