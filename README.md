@@ -12,7 +12,7 @@ This should work fairly okay as it is, but I will continue working on it for a w
 - [Get Grand Order Image](https://www.reddit.com/r/grandorder/comments/6jompd/modified_memu_image_with_fgo_na_preloaded_and/)
 - (Optional) Install the Clear Data apk from this repo in MEmu for easy clearing of data.
 - Setup your MEmu instance as 1280x720 (default) **and make sure it is at 0,0 (upper left) of your screen**.
-- Open CMD/Shell and cd into this repo.
+- Open CMD/Shell **as admin** and cd into this repo.
 - Run ```python main.py```
 
 # Notes
