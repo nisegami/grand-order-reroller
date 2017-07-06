@@ -14,6 +14,10 @@ This script solves some of those problems:
 - Improved stability, since MEmu isn't doing anything extra.
 - Ability to change and edit the script without redoing the entire macro, this script can easily be updated to account for changes in the tutorial in the future.
 
+However, it is not perfect. This method of rerolling has two major issues:
+- It requires mouse focus, so it's diffult to do anything else on the same PC at the same time. I have a laptop that I'm not using right now, so that's what I use for this script.
+- Only one instance, as a consequence of the above problem.
+
 # Basic Instructions:
 - [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download). This project uses Python3.
 - [Install PyAutoGUI](http://pyautogui.readthedocs.io/en/latest/install.html)
