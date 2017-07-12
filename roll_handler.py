@@ -1,10 +1,15 @@
 import time
 import os, os.path
-from pushbullet import Pushbullet
 from settings import PB_KEY, POINTS_THRESHOLD
 
 CLOSENESS_THRESHOLD = 0.8
-pb = Pushbullet(PB_KEY)
+
+try:
+    from pushbullet import Pushbullet
+    pb = Pushbullet(PB_KEY)
+    NOTIF_ENABLE = True
+except:
+    NOTIF_ENABLE = False
 
 possible_summons = {
     'waver': (200, 'Waver'),
@@ -46,6 +51,8 @@ possible_summons = {
 }
 
 def send_notif(points, summons):
+    if not NOTIF_ENABLE:
+        return
     pb.push_note('Roll with {} points.'.format(points), ', '.join(summons))
     time.sleep(2)
 
