@@ -19,35 +19,39 @@ However, it is not perfect. This method of rerolling has two major issues:
 - Only one instance, as a consequence of the above problem.
 
 # Basic Instructions:
-- [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download). This project uses Python3.
-- [Install PyAutoGUI](http://pyautogui.readthedocs.io/en/latest/install.html)
-- Clone/download this repo.
+- [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download). This project uses Python3. **Be sure to tick the 'add to path' button during setup.**
+- Run `pip install pyautogui numpy opencv-python` to install dependencies.
+- Download this repo.
 - [Setup MEmu](https://www.reddit.com/r/grandorder/comments/6akkkq/emu_wars_episode_x_return_of_the_emu/)
 - [Get Grand Order Image](https://www.reddit.com/r/grandorder/comments/6jompd/modified_memu_image_with_fgo_na_preloaded_and/)
 - Setup your MEmu instance as 1280x720 (default) **and make sure it is at 0,0 (upper left) of your screen**.
 - [Update Grand Order](https://drive.google.com/file/d/0B8tqm0cp0TuwWWNZRDgwZUFSMmM/view)
 - (Optional) Install the Clear Data apk from this repo in MEmu for easy clearing of data.
-- Play through the tutorial once and take all the necessary screenshots (see below).
-- Fill in your preferred name and default password into settings.example.py and rename to settings.py.
+- Fill in your preferred name and default password into settings.example.py and rename it to settings.py. Ignore other fields for now.
 - Open CMD/Shell **as admin** and cd into this repo.
 - Run ```python main.py```
 
 # Screenshots
-PyAutoGUI is very fickle with using screenshots to detect elements on the screen. Even if you keep all the settings the same, it seems to only work with screenshots taken on that machine. In v1, I relied minimally on this feature as a result, but in an effort to minimize the time it takes to do a roll, I have chosen to use this feature for most things.
-
-You can see what screenshots you need in the screenshots folder. I recommend sticking as close as possible to the choices I have made in what parts of the screen to capture.
+In v3, I switched from PyAutoGUI's image detection to naive computer vision with opencv and numpy. This is much faster and produces much less false negatives. And most importantly for end users, it does not require you to retake all screenshots. 
 
 # Notes
 - You can adjust the timings for all time.sleep() calls and the delay between PyAutoGUI actions with the TIMING_MULT and PAUSE_TIME variables respectively.
 - I recommend using a VPN to avoid IP bans. Ideally a fully unattended setup would try to get a new IP by disconnecting from and reconnecting to the VPN, but it doesn't do that yet.
 - Possible issues:
-  - IP ban handling may not work, it is hard to test.
   - There have been instances where bind codes have been lost due to an unknown issue. Because of the rarity of the problem, I am unable to determine the cause. However, after losing an account I quite liked, I decided to implement some additional checks that should correct the issue should it occur.
-  - Yolo-summons (1x rolls) are quite hard to implement. If you encounter problems, the best solution right now may be to just comment out that section of code.
-- I just rolled an Altria/Gil account while writing this. Nice.
+- I just rolled an Altria/Gil account while writing this. Nice. Update: decided to main that account for now.
   
 # Clearing Data
 There's an apk included in this repo. If you install that apk then click the icon, it will clear the data and allow you to reroll without downloading any data or messing in ES File Exporer. The script assumes you will have this apk installed and its icon will be located on the home screen directly to the left of the Grand Order icon's default position in the ova linked above.
+
+# Roll Tagging and Notifications
+As of v3, there is now a roll tagging feature that will inspect rolls and provide some information about the summons in that roll. Right now, in order to avoid conflicting with the main purpose of the script, this functionality is in its own file, `roll_handler.py`. 
+
+Running `python roll_handler.py` will scan the rolls folder every two minutes for completed but untagged rolls and will rename the folder to reflect what it found. 
+
+If you install Pushbullet.py with `pip install pushbullet.py` and set your [API Key](https://docs.pushbullet.com/v1/) in `settings.py`, then you will also be notified of good rolls.
+
+Be aware that there is no detection of duplicate rolls at this time.
 
 
 
