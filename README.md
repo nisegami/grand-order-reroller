@@ -7,6 +7,7 @@ This branch is experimental, and it is a more involved setup and debugging proce
 Here is an incomplete list of things you may need to tinker with:
 - Provide some form of VPN solution, although it should default to the old 'wait it out' approach if vpn.py is not defined. You can find the API spec in vpn.example.py.
 - Change the MEMU_MANAGER_ICON variable to point to the coordinates of the MEmu manager icon on your taskbar, ensure that MEmu manager is in the upper left of the display and ensure that you have only one instance in MEmu manager.
+- Replace the `desktop_wallpaper.png` screenshot that is normally hidden by MEmu but visible when any other windows you need (MEmu manager for sure, potentially also your VPN client window) are focussed.
 
 # Why It Exists
 I know MEmu has macro support, but if you ask anyone who uses it, you'll hear that they only automate up until the tutorial 10-roll because the fourth fight is non-determinisitic. You will also hear tips like leaving a lot of time between actions to account for variations in timing, which lengthens the time it takes for you to do a run. Also, in my experience, using MEmu's macros drastically reduced the stability of MEmu. 
