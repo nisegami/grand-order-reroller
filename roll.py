@@ -42,7 +42,7 @@ class Roll():
             if not count:
                 continue
 
-        self.total_points += (count * point_value)
+            self.total_points += (count * point_value)
         return self.total_points
 
     def anything(self):

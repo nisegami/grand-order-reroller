@@ -559,7 +559,6 @@ if __name__ == '__main__':
             clear_data()
             touch(**GO_ICON)                                            
 
-            old_result = result
             result = wait_until('title_screen',
                                 'ip_ban',
                                 'grand_order_icon',
@@ -568,7 +567,8 @@ if __name__ == '__main__':
                                 'desktop_wallpaper')
 
             if result == 0:                                             # Main Screen
-
+                was_previously_at_launcher = False
+                
                 # if (num_rolls % 4 == 0) and num_rolls:
                 #     # Preemptively restart memu and refresh IP
                 #     restart_memu(refresh_ip = True)
@@ -579,6 +579,7 @@ if __name__ == '__main__':
             # Failed To Launch
 
             elif result == 1:                                           # IP Ban
+                was_previously_at_launcher = False
                 if VPN_SUPPORT:
                     restart_memu(refresh_ip = True)
                 else:
@@ -595,13 +596,16 @@ if __name__ == '__main__':
 
 
             elif result == 3:                                           # Crash Message
+                was_previously_at_launcher = False
                 touch(x=990, y=440)
 
             elif result == 4:                                           # Relaunch without clearing
-                pass
+                was_previously_at_launcher = False
 
             elif result == 5:                                           # No MEmu
+                was_previously_at_launcher = False
                 restart_memu()
+
 
         # Restart MEmu
         # Applicable: http://i.imgur.com/QBTsrgM.png 
