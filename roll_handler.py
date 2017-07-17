@@ -1,8 +1,10 @@
 import time
 import os, os.path
-from settings import PB_KEY, POINTS_THRESHOLD
+from roll import Roll, Category, Rarity, possible_summons
+from settings import PB_KEY, POINTS_THRESHOLD, IMGUR_ID
 
-CLOSENESS_THRESHOLD = 0.8
+CLOSENESS_THRESHOLD = 0.80
+DISTANCE_THRESHOLD = 15 # pixels
 
 try:
     from pushbullet import Pushbullet
@@ -11,129 +13,165 @@ try:
 except:
     NOTIF_ENABLE = False
 
-possible_summons = {
-    'waver': (200, 'Waver'),
-    'gil': (200, 'Gilgamesh'),
-    'gil_large': (200, 'Gilgamesh'),
-    'saber': (200, 'Arturia'),
-    'saber_large': (200, 'Arturia'),
-    'jeanne': (150, 'Jeanne'),
-    'jeanne_large': (150, 'Jeanne'),
-    'altera': (100, 'Altera'),
-    'vlad': (100, 'Vlad'),
-    'vlad_large': (100, 'Vlad'),
-    'scope': (60, 'Kaleidoscope'),
-    'scope_large': (60, 'Kaleidoscope'),
-    'herc': (50, 'Heracles'),
-    'herc_large': (50, 'Heracles'),
-    'emiya': (50, 'EMIYA'),
-    'emiya_large': (50, 'EMIYA'),
-    'loz': (45, 'Limited.Over Zero'),
-    'loz_large': (45, 'Limited.Over Zero'),
-    'hf': (45, 'Heaven\'s Feel'), 
-    'hf_large': (45, 'Heaven\'s Feel'),   
-    'liz': (40, 'Elizabeth'),   
-    'liz_large': (40, 'Elizabeth'), 
-    'sieg': (40, 'Siegfried'),
-    'sieg_large': (40, 'Siegfried'),
-    'craft': (40, 'Formal Craft'),
-    'lancelot': (40, 'Lancelot'),
-    'lancelot_large': (40, 'Lancelot'),
-    'prisma': (40, 'Prisma Cosmos'),
-    'prisma_large': (40, 'Prisma Cosmos'),
-    'tamacat': (40, 'Tamano-cat'),
-    'tamacat_large': (40, 'Tamano-cat'),
-    'around': (30, 'Imaginary Around'),
-    'atalanta': (20, 'Atalanta'),
-    'atalanta_large': (20, 'Atalanta'),
-    'lily': (0, 'Saber Lily'),
-    'lily_large': (0, 'Saber Lily')
-}
+try:
+    import pyimgur
+    im = pyimgur.Imgur(IMGUR_ID)
+    IMGUR_ENABLE = True
+except:
+    IMGUR_ENABLE = False
 
-def send_notif(points, summons):
+def record_data(roll):
+    if not os.path.isfile('rolls.md'):
+        import shutil
+        shutil.copyfile('rolls.md.header', 'rolls.md')
+
+    with open('rolls.md', 'a') as rolls_file:
+        rolls_file.write('| {} | {} | {} | {} | {} | Price | {} | No | {} |\n'.format(
+            roll.tally_points(), 
+            roll.gen_description_string(categories = [Category.SERVANT], rarities = [Rarity.FIVE_STAR]), 
+            roll.gen_description_string(categories = [Category.SERVANT], rarities = [Rarity.FOUR_STAR]), 
+            roll.gen_description_string(categories = [Category.CE]), 
+            roll.screenshot_url, 
+            roll.timestamp,
+            roll.notes))
+
+def upload_image(image_path, roll):
+    if not IMGUR_ENABLE:
+        return
+
+    uploaded_image = None
+
+    while not uploaded_image:
+        try:
+            uploaded_image = im.upload_image(image_path, title=roll.gen_description_string())
+        except:
+            time.sleep(5)
+
+    return uploaded_image.link
+
+def send_notif(roll):    
     if not NOTIF_ENABLE:
         return
-    pb.push_note('Roll with {} points.'.format(points), ', '.join(summons))
-    time.sleep(2)
 
-def identify_summons(image_path):
+    points = roll.tally_points()
+
+    try:
+        pb.push_note('Roll with {} points.'.format(points), roll.gen_description_string())
+    except:
+        # Possibly Rate Limited
+        pass                                                        
+
+def filter_matches(points):
+    filtered_points = []
+
+    for new_point in points:
+        x1, y1 = new_point
+        for existing_point in filtered_points:
+            x2, y2 = existing_point
+            if ((abs(x1 - x2) < DISTANCE_THRESHOLD) 
+                    and (abs(y1 - y2) < DISTANCE_THRESHOLD)):
+                break
+        else:
+            filtered_points.append(new_point)
+
+    return filtered_points
+
+def identify_summons(image_path, this_roll = Roll()):
     import cv2
     import numpy as np
 
     image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2GRAY)
-    summons = []
-    points = 0
 
-    for file_name, (point_value, actual_name) in possible_summons.items():
-        template = cv2.imread(os.path.join('screenshots', 'summons', file_name + '.png'), cv2.IMREAD_GRAYSCALE)
+    for summon_data in possible_summons:
+        real_name, point_value, category, rarity, file_names = summon_data
+        pts = []
 
-        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where(res >= CLOSENESS_THRESHOLD)
+        for file_name in file_names:
+            template = cv2.imread(
+                    os.path.join('screenshots', 
+                                 'summons', 
+                                 file_name + '.png'), 
+                    cv2.IMREAD_GRAYSCALE)
 
-        for pt in zip(*loc[::-1]):
+            res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
+            loc = np.where(res >= CLOSENESS_THRESHOLD)
+            pts += zip(*loc[::-1])
 
-            # Due to weird behaviour, only add one instance of each summon
-            if actual_name in summons:
-                continue
-            summons.append(actual_name)
-            points += point_value
+        for pt in filter_matches(pts):
+            this_roll.summons[summon_data] += 1
 
-    return (summons, points) 
+    return this_roll
 
-def rename_folder(folder, rolls_folder = 'rolls'):
-    if rolls_folder not in folder:
-        folder = os.path.join(rolls_folder, folder)
-
-    if os.path.isfile(os.path.join(folder, '.done')):
-        return
-
-    new_name, summons, points = gen_new_folder_name(folder, rolls_folder)
-    new_name = os.path.join(rolls_folder, new_name)
-    os.rename(folder, new_name)
-
-    if summons:
-        open(os.path.join(new_name, '.done'), 'x').close()
-
-    if points >= POINTS_THRESHOLD:
-        send_notif(points, summons)
-
-    return (summons, points)
-
-def gen_new_folder_name(folder, rolls_folder = 'rolls'):
+def get_data(folder, rolls_folder = 'rolls', gen_link = True):
     if rolls_folder not in folder:
         folder_title = folder
         folder = os.path.join(rolls_folder, folder)
     else: 
         folder_title = folder.replace(rolls_folder, '')
-    
-    timestamp = folder_title.split(' - ')[0]
-    summons, points = [], 0
+
+    roll = Roll()
+    roll.timestamp = folder_title.split(' - ')[0][1:]
 
     if os.path.isfile(os.path.join(folder, 'rolls.png')): 
-        summons, points = identify_summons(os.path.join(folder, 'rolls.png'))
+        identify_summons(os.path.join(folder, 'rolls.png'), roll)
+        roll.screenshot_url = (upload_image(os.path.join(folder, 'rolls.png'), roll) 
+                                    if gen_link else 'Upon Request')
 
-    else:
-        if os.path.isfile(os.path.join(folder, 'servants.png')):
-            summons_servants, points_servants = identify_summons(os.path.join(folder, 'servants.png'))
-            summons += summons_servants
-            points += points_servants
-        if os.path.isfile(os.path.join(folder, 'ces.png')):
-            summons_ces, points_ces = identify_summons(os.path.join(folder, 'ces.png'))
-            summons += summons_ces
-            points += points_ces
+    # Only applicable to a few rolls, I'll tag the useful ones by hand.
 
-    new_folder = os.path.join(rolls_folder, '{} - {} pts - {}'.format(timestamp, points, (', '.join(summons) if points else 'Shit Roll')))[1:]
+    # else:
+    #     if os.path.isfile(os.path.join(folder, 'servants.png')):
+    #         identify_summons(os.path.join(folder, 'servants.png'), roll)
 
-    return (new_folder, summons, points)
+    #     if os.path.isfile(os.path.join(folder, 'ces.png')):
+    #         identify_summons(os.path.join(folder, 'ces.png'), roll)
+
+    #     if os.path.isfile(os.path.join(folder, 'servants.png')):
+    #         roll.screenshot_url = upload_image(os.path.join(folder, 'servants.png'), roll)
+    #         roll.notes = 'Screenshot does not include CEs, please ask.'
+
+    new_folder = os.path.join(rolls_folder, 
+        '{} - {} pts - {}'.format(
+            roll.timestamp, 
+            roll.tally_points(), 
+            roll.gen_description_string()))
+
+    return (new_folder, roll)
+
+def process_roll(folder, rolls_folder = 'rolls'):
+    if rolls_folder not in folder:
+        folder = os.path.join(rolls_folder, folder)
+
+    # if os.path.isfile(os.path.join(folder, '.done')):
+    #     return
+
+    new_name, roll = get_data(folder, rolls_folder)
+    os.rename(folder, new_name)
+    
+    record_data(roll)
+
+    # if roll.anything():
+    #     open(os.path.join(new_name, '.done'), 'x').close()
+
+    if roll.tally_points() >= POINTS_THRESHOLD:
+        send_notif(points, summons)
+
+    return (roll)
 
 if __name__ == '__main__':
     rolls_folder = 'rolls'
 
-    while True:
-        try:
-            for subdir, folders, files in os.walk(rolls_folder):
-                for folder in folders:
-                    rename_folder(folder, rolls_folder)
-        except Exception as e:
-            pb.push_note('Ay Arshad, we fucked up - Mal', repr(e))
-        time.sleep(120)
+    # while True:
+    #     try:
+    #         for subdir, folders, files in os.walk(rolls_folder):
+    #             for folder in folders:
+    #                 process_roll(folder, rolls_folder)
+    #     except Exception as e:
+    #         pb.push_note('Ay Arshad, we fucked up - Mal', repr(e))
+    #     time.sleep(120)
+
+    NOTIF_ENABLE = False
+
+    for subdir, folders, files in os.walk(rolls_folder):
+        for folder in folders:
+            process_roll(folder, rolls_folder)

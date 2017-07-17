@@ -2,6 +2,9 @@
 settings.py
 *.ova
 *.ini
+rolls.md
+vpn.py
+Thumbs.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
