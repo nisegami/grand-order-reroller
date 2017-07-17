@@ -211,9 +211,9 @@ if __name__ == '__main__':
 
         wait_until('attack')
         touch(**ATTACK)
-        select_card(1)
         select_card(2)
         select_card(3)
+        select_card(1)
 
         wait_until('skill_selection')
         touch(x=166, y=607)                                         # Mash Ability
@@ -224,12 +224,6 @@ if __name__ == '__main__':
         touch(**ATTACK)
         wait(2)
         touch(x=1140, y=90)                                         # Battle Speed
-        select_card(1)
-        select_card(2)
-        select_card(3)
-
-        wait_until('attack')
-        touch(**ATTACK)
         select_card(1)
         select_card(2)
         select_card(3)
@@ -264,8 +258,8 @@ if __name__ == '__main__':
         touch(x=300, y=330)                                         # Change Target
         touch(**ATTACK)
         select_card(1)
-        select_card(2)
         select_card(3)
+        select_card(2)
 
         wait_until('attack')
         touch(**ATTACK)
