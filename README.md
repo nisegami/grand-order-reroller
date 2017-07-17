@@ -26,6 +26,7 @@ However, it is not perfect. This method of rerolling has two major issues:
 - Only one instance, as a consequence of the above problem.
 
 # Basic Instructions:
+Note: this is now incomplete as of v4, see above.
 - [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download). This project uses Python3. **Be sure to tick the 'add to path' button during setup.**
 - Run `pip install pyautogui numpy opencv-python` to install dependencies.
 - Download this repo.
@@ -42,23 +43,22 @@ However, it is not perfect. This method of rerolling has two major issues:
 In v3, I switched from PyAutoGUI's image detection to naive computer vision with opencv and numpy. This is much faster and produces much less false negatives. And most importantly for end users, it does not require you to retake all screenshots. 
 
 # Notes
-- You can adjust the timings for all time.sleep() calls and the delay between PyAutoGUI actions with the TIMING_MULT and PAUSE_TIME variables respectively.
-- I recommend using a VPN to avoid IP bans. Ideally a fully unattended setup would try to get a new IP by disconnecting from and reconnecting to the VPN, but it doesn't do that yet.
+- You can adjust the timings for all wait() calls and the delay between PyAutoGUI actions with the TIMING_MULT and PAUSE_TIME variables respectively.
+- I recommend using a VPN to avoid IP bans. If you provide a VPN solution in vpn.py, the fully automated setup will use that functionality when it detects you are IP banned. 
+- I just rolled an Altria/Gil account while writing this. Nice. Update: decided to main that account for now.
 - Possible issues:
   - There have been instances where bind codes have been lost due to an unknown issue. Because of the rarity of the problem, I am unable to determine the cause. However, after losing an account I quite liked, I decided to implement some additional checks that should correct the issue should it occur.
-- I just rolled an Altria/Gil account while writing this. Nice. Update: decided to main that account for now.
   
 # Clearing Data
 There's an apk included in this repo. If you install that apk then click the icon, it will clear the data and allow you to reroll without downloading any data or messing in ES File Exporer. The script assumes you will have this apk installed and its icon will be located on the home screen directly to the left of the Grand Order icon's default position in the ova linked above.
 
 # Roll Tagging and Notifications
-As of v3, there is now a roll tagging feature that will inspect rolls and provide some information about the summons in that roll. Right now, in order to avoid conflicting with the main purpose of the script, this functionality is in its own file, `roll_handler.py`. 
-
-Running `python roll_handler.py` will scan the rolls folder every two minutes for completed but untagged rolls and will rename the folder to reflect what it found. 
+As of v4, rolls are tagged automatically by the script. Some information about rolls should also be recording in `rolls.md` as a Markdown table. Also as part of v4, rolling the same servant/ce twice on the same account should be handled correctly.
 
 If you install Pushbullet.py with `pip install pushbullet.py` and set your [API Key](https://docs.pushbullet.com/v1/) in `settings.py`, then you will also be notified of good rolls.
 
-Be aware that there is no detection of duplicate rolls at this time.
+If you install Pushbullet.py with `pip install pyimgur` and set your [Imgur ID/Secret](https://api.imgur.com/oauth2/addclient) in `settings.py`, then your rolls screenshot will automatically be uploaded to imgur and recorded in `rolls.md`.
+
 
 
 
