@@ -25,8 +25,8 @@ def record_data(roll):
         import shutil
         shutil.copyfile('rolls.md.header', 'rolls.md')
 
-    with open('rolls.md', 'a') as rolls_file:
-        rolls_file.write('| {} | {} | {} | {} | {} | Price | {} | No | {} |\n'.format(
+    with open('rolls_2.md', 'a') as rolls_file:
+        rolls_file.write('| {:03d} | {} | {} | {} | {} | Price | {} | No | {} |\n'.format(
             roll.tally_points(), 
             roll.gen_description_string(categories = [Category.SERVANT], rarities = [Rarity.FIVE_STAR]), 
             roll.gen_description_string(categories = [Category.SERVANT], rarities = [Rarity.FOUR_STAR]), 
@@ -56,7 +56,7 @@ def send_notif(roll):
     points = roll.tally_points()
 
     try:
-        pb.push_note('Roll with {} points.'.format(points), roll.gen_description_string())
+        pb.push_note('Roll with {} points.'.format(roll.tally_points()), roll.gen_description_string())
     except:
         # Possibly Rate Limited
         pass                                                        
@@ -154,21 +154,12 @@ def process_roll(folder, rolls_folder = 'rolls'):
     #     open(os.path.join(new_name, '.done'), 'x').close()
 
     if roll.tally_points() >= POINTS_THRESHOLD:
-        send_notif(points, summons)
+        send_notif(roll)
 
     return (roll)
 
 if __name__ == '__main__':
     rolls_folder = 'rolls'
-
-    # while True:
-    #     try:
-    #         for subdir, folders, files in os.walk(rolls_folder):
-    #             for folder in folders:
-    #                 process_roll(folder, rolls_folder)
-    #     except Exception as e:
-    #         pb.push_note('Ay Arshad, we fucked up - Mal', repr(e))
-    #     time.sleep(120)
 
     NOTIF_ENABLE = False
 
