@@ -1,3 +1,6 @@
+# THIS REPOSITORY IS OUT OF DATE. 
+I stopped supporting it when the launch SQ bonus ended. This code serves as a framework that can help you bring this project up to date for yourself.
+
 # Grand-Order-Reroller
 Unattended rerolls for Fate/Grand Order
 
